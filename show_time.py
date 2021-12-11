@@ -8,18 +8,21 @@ text = 'Hello World'
 
 clock = UnicornHATMini()
 
-#TODO: See what this does
-clock.set_rotation(0)
+# Rotate text upside down
+clock.set_rotation(180)
 
+# Get clock dimensions
 display_width, display_height = clock.get_shape()
 print('{} x {}'.format(display_width, display_height))
 
+# Set brightness
 clock.set_brightness(0.1)
 
+# Get font
 font = ImageFont.truetype('5x7.ttf', 8)
-
 text_width, text_height = font.getsize(text)
 
+# Create image
 img = Image.new('P', (text_width + display_width + display_width, display_height), 0)
 draw = ImageDraw.Draw(img)
 
