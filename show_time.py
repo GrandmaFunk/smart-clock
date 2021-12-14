@@ -1,7 +1,4 @@
 import time
-import sys
-from colorsys import hsv_to_rgb
-from PIL import Image, ImageDraw, ImageFont
 from unicornhatmini import UnicornHATMini
 from datetime import datetime
 
@@ -92,11 +89,21 @@ clock.set_rotation(180)
 clock.set_brightness(0.1)
 
 current_time = datetime.now().strftime('%I:%M')
-for val in current_time:
+for pos, val in enumerate(current_time):
+    if pos == 0:
+        offset = 0
+    elif pos == 1:
+        offset = 4
+    elif pos == 2:
+        offset = 7
+    elif pos == 3:
+        offset = 10
+    elif pos == 4:
+        offset = 14
     for pixel in numbers[val]:
-        x = pixel[0]
+        x = pixel[0] + offset
         y = pixel[1]
         clock.set_pixel(x,y, 255,0,0)
-    clock.show()
-    time.sleep(1)
-    clock.clear()
+clock.show()
+time.sleep(20)
+clock.clear()
