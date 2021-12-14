@@ -2,6 +2,11 @@ import time
 from unicornhatmini import UnicornHATMini
 from datetime import datetime
 import threading
+import signal
+
+from google.cloud import firestore
+import firebase_admin
+from firebase_admin import credentials
 
 numbers = {
     '0': [[0, 0], [1, 0], [2, 0],
@@ -80,6 +85,10 @@ numbers = {
     [1, 4]]
 }
 
+cred = credentials.Certificate('.secrets/key.json')
+firebase_admin.initialize_app(cred)
+db = firestore.Client()
+
 clock = UnicornHATMini()
 
 # Rotate text upside down
@@ -88,18 +97,30 @@ clock.set_rotation(180)
 # Set brightness
 clock.set_brightness(0.1)
 
-# ccr, ccb, ccg = 0, 255, 0
+blink = False
+ccr, ccg, ccb = 0, 255, 0
 
 # def display_middle(blink):
 #     if blink:
 #         pass
 #     else:
+
+def on_blink(doc, changes, read_time):
+    global ccr, ccb, ccg
+    blink = doc[0].to_dict()
+    print(blink)
+    if blink['status']:
+        ccr, ccg, ccb = 0, 255, 0
+    else:
+        ccr, ccg, ccb = 255, 0, 0
+    callback_done.set()
         
 
 def show_middle(middle_on):
+    global ccr, ccb, ccg
     if middle_on:
-        clock.set_pixel(8, 2, 255, 0, 0)
-        clock.set_pixel(8, 4, 255, 0, 0)
+        clock.set_pixel(8, 2, ccr, ccb, ccg)
+        clock.set_pixel(8, 4, ccr, ccb, ccg)
         return False
     else:
         clock.set_pixel(8, 2, 0, 0, 0)
@@ -126,11 +147,16 @@ def show_clock():
         
         middle_on = show_middle(middle_on)
         clock.show()
-        time.sleep(1)
+        time.sleep(.5)
         clock.clear()
 
 
-clock_thread = threading.Thread(target = show_clock, daemon=True)
+clock_thread = threading.Thread(target = show_clock)
+
+callback_done = threading.Event()
+blink_ref = db.collection(u'memos').document(u'blink')
+blink_watch = blink_ref.on_snapshot(on_blink)
+
 clock_thread.start()
-time.sleep(20)
+
 
