@@ -1,6 +1,7 @@
 import time
 from unicornhatmini import UnicornHATMini
 from datetime import datetime
+import threading
 
 numbers = {
     '0': [[0, 0], [1, 0], [2, 0],
@@ -87,22 +88,33 @@ clock.set_rotation(180)
 # Set brightness
 clock.set_brightness(0.1)
 
-current_time = datetime.now().strftime('%I:%M')
-for pos, val in enumerate(current_time):
-    if pos == 0:
-        offset = 0
-    elif pos == 1:
-        offset = 4
-    elif pos == 2:
-        offset = 7
-    elif pos == 3:
-        offset = 10
-    elif pos == 4:
-        offset = 14
-    for pixel in numbers[val]:
-        x = pixel[0] + offset
-        y = pixel[1]
-        clock.set_pixel(x,y, 255,0,0)
-clock.show()
-time.sleep(20)
-clock.clear()
+# ccr, ccb, ccg = 0, 255, 0
+
+# def display_middle(blink):
+#     if blink:
+#         pass
+#     else:
+        
+def show_clock():
+    while True:
+        current_time = datetime.now().strftime('%I%M')
+        for pos, val in enumerate(current_time):
+            if pos == 0:
+                offset = 0
+            elif pos == 1:
+                offset = 4
+            elif pos == 2:
+                offset = 10
+            elif pos == 3:
+                offset = 14
+            for pixel in numbers[val]:
+                x = pixel[0] + offset
+                y = pixel[1]
+                clock.set_pixel(x,y, 255,0,0)
+        clock.show()
+        time.sleep(5)
+        clock.clear()
+        
+clock_thread = threading.Thread(target = show_clock)
+clock_thread.start()
+
