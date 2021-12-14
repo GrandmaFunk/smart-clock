@@ -95,7 +95,19 @@ clock.set_brightness(0.1)
 #         pass
 #     else:
         
+
+def show_middle(middle_on):
+    if middle_on:
+        clock.set_pixel(8, 2, 255, 0, 0)
+        clock.set_pixel(8, 4, 255, 0, 0)
+        return False
+    else:
+        clock.set_pixel(8, 2, 0, 0, 0)
+        clock.set_pixel(8, 4, 0, 0, 0)
+        return True
+
 def show_clock():
+    middle_on = True
     while True:
         current_time = datetime.now().strftime('%I%M')
         for pos, val in enumerate(current_time):
@@ -111,10 +123,14 @@ def show_clock():
                 x = pixel[0] + offset
                 y = pixel[1]
                 clock.set_pixel(x,y, 255,0,0)
-        clock.show()
-        time.sleep(5)
-        clock.clear()
         
-clock_thread = threading.Thread(target = show_clock)
+        middle_on = show_middle(middle_on)
+        clock.show()
+        time.sleep(1)
+        clock.clear()
+
+
+clock_thread = threading.Thread(target = show_clock, daemon=True)
 clock_thread.start()
+time.sleep(20)
 
