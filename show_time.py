@@ -145,10 +145,9 @@ def show_clock():
                 y = pixel[1]
                 clock.set_pixel(x,y, 255,0,0)
         
-        middle_on = show_middle(middle_on)
+        #middle_on = show_middle(middle_on)
         clock.show()
         time.sleep(.5)
-        clock.clear()
 
 
 clock_thread = threading.Thread(target = show_clock)
@@ -157,6 +156,23 @@ callback_done = threading.Event()
 blink_ref = db.collection(u'memos').document(u'blink')
 blink_watch = blink_ref.on_snapshot(on_blink)
 
-clock_thread.start()
+#clock_thread.start()
 
+def show_blink():
+    while True:
+        for i in range(7):
+            clock.set_pixel(8, i, 0, 255, 0)
+            clock.show()
+            time.sleep(.1)
+            clock.set_pixel(8, i, 0, 0, 0)
+            time.sleep(.1)
+        for i in range(5, 0, -1):
+            clock.set_pixel(8, i, 0, 255, 0)
+            clock.show()
+            time.sleep(.1)
+            clock.set_pixel(8, i, 0, 0, 0)
+            time.sleep(.1)
+
+
+show_blink()
 
