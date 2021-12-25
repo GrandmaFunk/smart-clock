@@ -126,8 +126,8 @@ def show_blink():
                 clock.set_pixel(8, i, 0, 0, 0)
                 time.sleep(.1)
         else:
-            clock.set_pixel(8, 2, 40, 0, 0)
-            clock.set_pixel(8, 4, 40, 0, 0)
+            clock.set_pixel(8, 2, 70, 0, 0)
+            clock.set_pixel(8, 4, 70, 0, 0)
             clock.show()
             time.sleep(.5)
             clock.set_pixel(8, 2, 0, 0, 0)
@@ -138,6 +138,8 @@ def show_blink():
 def show_clock():
     middle_on = True
     while True:
+        #TODO: Clear the previous number when a new time occurs
+        #TODO: Remove the leading 0 for times 1 through 9
         current_time = datetime.now().strftime('%I%M')
         for pos, val in enumerate(current_time):
             if pos == 0:
@@ -156,6 +158,8 @@ def show_clock():
         #clock.show()
         time.sleep(.5)
 
+#TODO: Handle buttons
+#TODO: Send messages
 
 clock_thread = threading.Thread(target = show_clock)
 
