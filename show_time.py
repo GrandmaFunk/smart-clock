@@ -97,35 +97,43 @@ clock.set_rotation(180)
 # Set brightness
 clock.set_brightness(0.1)
 
-blink = False
-ccr, ccg, ccb = 0, 255, 0
-
 # def display_middle(blink):
 #     if blink:
 #         pass
 #     else:
 
 def on_blink(doc, changes, read_time):
-    global ccr, ccb, ccg
+    global blink
     blink = doc[0].to_dict()
     print(blink)
-    if blink['status']:
-        ccr, ccg, ccb = 0, 255, 0
-    else:
-        ccr, ccg, ccb = 255, 0, 0
+    blink = blink['status']
     callback_done.set()
         
-
-def show_middle(middle_on):
-    global ccr, ccb, ccg
-    if middle_on:
-        clock.set_pixel(8, 2, ccr, ccb, ccg)
-        clock.set_pixel(8, 4, ccr, ccb, ccg)
-        return False
-    else:
-        clock.set_pixel(8, 2, 0, 0, 0)
-        clock.set_pixel(8, 4, 0, 0, 0)
-        return True
+def show_blink():
+    global blink
+    while True:
+        if blink:
+            for i in range(7):
+                clock.set_pixel(8, i, 0, 200, 0)
+                clock.show()
+                time.sleep(.1)
+                clock.set_pixel(8, i, 0, 0, 0)
+                time.sleep(.1)
+            for i in range(5, 0, -1):
+                clock.set_pixel(8, i, 0, 200, 0)
+                clock.show()
+                time.sleep(.1)
+                clock.set_pixel(8, i, 0, 0, 0)
+                time.sleep(.1)
+        else:
+            clock.set_pixel(8, 2, 40, 0, 0)
+            clock.set_pixel(8, 4, 40, 0, 0)
+            clock.show()
+            time.sleep(.5)
+            clock.set_pixel(8, 2, 0, 0, 0)
+            clock.set_pixel(8, 4, 0, 0, 0)
+            clock.show()
+            time.sleep(.5)
 
 def show_clock():
     middle_on = True
@@ -143,10 +151,9 @@ def show_clock():
             for pixel in numbers[val]:
                 x = pixel[0] + offset
                 y = pixel[1]
-                clock.set_pixel(x,y, 255,0,0)
-        
-        #middle_on = show_middle(middle_on)
-        clock.show()
+                clock.set_pixel(x,y, 200,0,0)
+
+        #clock.show()
         time.sleep(.5)
 
 
@@ -156,23 +163,9 @@ callback_done = threading.Event()
 blink_ref = db.collection(u'memos').document(u'blink')
 blink_watch = blink_ref.on_snapshot(on_blink)
 
-#clock_thread.start()
-
-def show_blink():
-    while True:
-        for i in range(7):
-            clock.set_pixel(8, i, 0, 255, 0)
-            clock.show()
-            time.sleep(.1)
-            clock.set_pixel(8, i, 0, 0, 0)
-            time.sleep(.1)
-        for i in range(5, 0, -1):
-            clock.set_pixel(8, i, 0, 255, 0)
-            clock.show()
-            time.sleep(.1)
-            clock.set_pixel(8, i, 0, 0, 0)
-            time.sleep(.1)
+clock_thread.start()
 
 
+blink = False
 show_blink()
 
