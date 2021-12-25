@@ -1,0 +1,10 @@
+[Unit]
+Description=Show the time on boot
+Requires=show_time.service
+
+[Timer]
+Unit=show_time.service
+OnBootSec=5
+
+[Install]
+WantedBy=timers.target
