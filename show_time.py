@@ -11,6 +11,7 @@ from firebase_admin import credentials
 import pandas as pd
 import pytz
 import pickle
+import json
 
 from gpiozero import Button
 from signal import pause
@@ -214,7 +215,8 @@ if __name__ == '__main__':
     # Connect to Firestore
     cred = credentials.Certificate('.secrets/key.json')
     firebase_admin.initialize_app(cred)
-    db = firestore.Client()
+    cloud_project = json.load(open('.secrets/vars.json'))['project']
+    db = firestore.Client(project = cloud_project)
 
     # Create display
     clock = UnicornHATMini()
