@@ -200,24 +200,27 @@ cred = credentials.Certificate('.secrets/key.json')
 firebase_admin.initialize_app(cred)
 db = firestore.Client()
 
+# Create display
 clock = UnicornHATMini()
-# Rotate text upside down
 clock.set_rotation(180)
-# Set brightness
 clock.set_brightness(0.1)
+
+# Set vars
+blink = False
 
 #TODO: Handle buttons
 #TODO: Send messages
 
 clock_thread = threading.Thread(target = refresh_clock)
 
+# Start thread to listen to Firestore changes
 callback_done = threading.Event()
 blink_ref = db.collection(u'memos').document(u'blink')
 blink_watch = blink_ref.on_snapshot(on_blink)
 
+# Start thread to show time
 clock_thread.start()
 
-
-blink = False
+# Blink the middle section of the clock
 show_blink()
 
