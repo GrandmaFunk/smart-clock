@@ -134,6 +134,7 @@ def update_memo(today):
         else:
             memo = "You're the absolute best!"
     
+    # Update db if the memo is different than last time
     if last_memo != memo:
         db.collection(u'memos').document(u'memo').set({'memo': memo})
         pickle.dump(memo, open('logs/last_memo.p', 'wb'))

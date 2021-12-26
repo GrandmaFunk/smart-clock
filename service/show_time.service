@@ -6,7 +6,7 @@ User=pi
 WorkingDirectory=/home/pi/smart-clock
 Type=simple
 Environment=GOOGLE_APPLICATION_CREDENTIALS=/home/pi/smart-clock/.secrets/key.json
-ExecStart=/usr/bin/python3 /home/pi/smart-clock/show_time.py
+ExecStart=env/bin/python3 /home/pi/smart-clock/show_time.py
 
 [Install]
 WantedBy=multi-user.target
