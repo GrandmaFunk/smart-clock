@@ -123,9 +123,8 @@ def update_memo(today):
         last_memo = None
     
     if last_memo != memo:
-        #TODO: Write the memo to Firebase
-        print(memo)
         db.collection(u'memos').document(u'memo').set({'memo': memo})
+        pickle.dump(memo, open('logs/last_memo.p', 'wb'))
 
 def on_blink(doc, changes, read_time):
     # When the blink status is changed in Firestore, update the global value
@@ -197,7 +196,7 @@ def refresh_clock():
 
         # Check if the date has changed
         if current_date.date() != old_date.date():
-            print('New day...')
+            print('New day or reboot detected...')
             update_memo(current_date)
 
         # Check if new time
