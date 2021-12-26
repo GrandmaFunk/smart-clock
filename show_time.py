@@ -98,13 +98,12 @@ button_map = { 5: 'A',
                16: 'X',
                24: 'Y'}
 
+blink = False
+
 def button_pressed(button):
     button_name = button_map[button.pin.number]
     if button_name == 'B':
         db.collection(u'memos').document(u'blink').set({'status': False})
-    
-
-
 
 def update_memo(today):
 
@@ -129,6 +128,7 @@ def update_memo(today):
         db.collection(u'memos').document(u'memo').set({'memo': memo})
 
 def on_blink(doc, changes, read_time):
+    # When the blink status is changed in Firestore, update the global value
     global blink
     blink = doc[0].to_dict()
     print(blink)
@@ -166,6 +166,7 @@ def show_blink():
             time.sleep(.5)
 
 def set_time(time_to_set, brightness):
+    # Set the pixels for each number of the time
     for pos, val in enumerate(time_to_set):
         if pos == 0:
             offset = 0
@@ -176,6 +177,7 @@ def set_time(time_to_set, brightness):
         elif pos == 3:
             offset = 14
         for pixel in numbers[val]:
+            # Don't show leading 0 in time
             if not (pos == 0 and val == '0'):
                 x = pixel[0] + offset
                 y = pixel[1]
@@ -198,8 +200,6 @@ def refresh_clock():
             print('New day...')
             update_memo(current_date)
 
-        #TODO: Remove the leading 0 for times 1 through 9
-
         # Check if new time
         if current_time != old_time:
             set_time(old_time, 0)
@@ -210,50 +210,46 @@ def refresh_clock():
         old_date = current_date
         old_time = current_time
 
+if __name__ == '__main__':
+        
+    # Connect to Firestore
+    cred = credentials.Certificate('.secrets/key.json')
+    firebase_admin.initialize_app(cred)
+    db = firestore.Client()
 
-# Connect to Firestore
-cred = credentials.Certificate('.secrets/key.json')
-firebase_admin.initialize_app(cred)
-db = firestore.Client()
+    # Create display
+    clock = UnicornHATMini()
+    clock.set_rotation(180)
+    clock.set_brightness(0.1)
 
-# Create display
-clock = UnicornHATMini()
-clock.set_rotation(180)
-clock.set_brightness(0.1)
+    # Start thread to listen to Firestore changes
+    callback_done = threading.Event()
+    blink_ref = db.collection(u'memos').document(u'blink')
+    blink_watch = blink_ref.on_snapshot(on_blink)
 
-# Set vars
-blink = False
+    # Start thread to show time
+    clock_thread = threading.Thread(target = refresh_clock)
+    clock_thread.start()
 
-# Start thread to listen to Firestore changes
-callback_done = threading.Event()
-blink_ref = db.collection(u'memos').document(u'blink')
-blink_watch = blink_ref.on_snapshot(on_blink)
+    # Blink the middle section of the clock
+    blink_thread = threading.Thread(target = show_blink)
+    blink_thread.start()
 
-# Start thread to show time
-clock_thread = threading.Thread(target = refresh_clock)
-clock_thread.start()
+    # Set buttons
+    button_a = Button(5)
+    button_b = Button(6)
+    button_x = Button(16)
+    button_y = Button(24)
 
-# Blink the middle section of the clock
-blink_thread = threading.Thread(target = show_blink)
-blink_thread.start()
-
-# Set buttons
-button_a = Button(5)
-button_b = Button(6)
-button_x = Button(16)
-button_y = Button(24)
-
-try:
-    button_a.when_pressed = button_pressed
-    button_b.when_pressed = button_pressed
-    button_x.when_pressed = button_pressed
-    button_y.when_pressed = button_pressed
-    pause()
-except KeyboardInterrupt:
-    button_a.close()
-    button_b.close()
-    button_x.close()
-    button_y.close()
-
-
+    try:
+        button_a.when_pressed = button_pressed
+        button_b.when_pressed = button_pressed
+        button_x.when_pressed = button_pressed
+        button_y.when_pressed = button_pressed
+        pause()
+    except KeyboardInterrupt:
+        button_a.close()
+        button_b.close()
+        button_x.close()
+        button_y.close()
 
