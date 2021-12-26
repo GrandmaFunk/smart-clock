@@ -233,6 +233,7 @@ if __name__ == '__main__':
     if (len(sys.argv) > 1) and (type(sys.argv[1]) == str):
         update_memo_manually(sys.argv[1])
         print('Manually updated the memo.')
+    # If script is not called with variables, then show clock and stay running
     else:
         # Create display
         clock = UnicornHATMini()
