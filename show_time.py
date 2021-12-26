@@ -8,6 +8,11 @@ from google.cloud import firestore
 import firebase_admin
 from firebase_admin import credentials
 
+import pandas as pd
+import pytz
+import pickle
+
+
 numbers = {
     '0': [[0, 0], [1, 0], [2, 0],
           [0, 1],         [2, 1],
@@ -51,8 +56,8 @@ numbers = {
           [0,3], [1,3], [2,3],
                         [2,4],
           [0,5],        [2,5],
-          [0,6], [1,6], [2,6]
-],    '6': [
+          [0,6], [1,6], [2,6]],
+    '6': [
         [0,0], [1, 0], [2, 0],
         [0,1],
         [0,2],
@@ -85,22 +90,37 @@ numbers = {
     [1, 4]]
 }
 
+# Connect to Firestore
 cred = credentials.Certificate('.secrets/key.json')
 firebase_admin.initialize_app(cred)
 db = firestore.Client()
 
 clock = UnicornHATMini()
-
 # Rotate text upside down
 clock.set_rotation(180)
-
 # Set brightness
 clock.set_brightness(0.1)
 
-# def display_middle(blink):
-#     if blink:
-#         pass
-#     else:
+
+def update_memo(today):
+
+    # Read the CSV file
+    df = pd.read_csv('memos.csv')
+    df['date'] = pd.to_datetime(df.date, format='%m/%d/%Y')
+    df['memo'] = df.memo.ffill()
+
+    # Get today's memo
+    #TODO: Error handle this
+    memo = df[df.date == today.strftime('%Y-%m-%d')].memo[0]
+
+    try:
+        last_memo = pickle.load(open('logs/last_memo.p', 'rb'))
+    except FileNotFoundError:
+        last_memo = None
+    
+    if last_memo != memo:
+        #TODO: Write the memo to Firebase
+        pass
 
 def on_blink(doc, changes, read_time):
     global blink
@@ -137,10 +157,24 @@ def show_blink():
 
 def show_clock():
     middle_on = True
+    est = pytz.timezone('US/Eastern')
+    old_date = est.localize(datetime(2021,1,1))
+
     while True:
+        
+        # Get the current time
+        current_date = est.localize(datetime.now())
+        current_time = datetime.now().strftime('%I%M')
+
+        # Check if the date has changed
+        if (current_date - old_date).days > 0:
+            print('New day...')
+            update_memo(current_date)
+
+        # Write the time
         #TODO: Clear the previous number when a new time occurs
         #TODO: Remove the leading 0 for times 1 through 9
-        current_time = datetime.now().strftime('%I%M')
+
         for pos, val in enumerate(current_time):
             if pos == 0:
                 offset = 0
@@ -155,8 +189,8 @@ def show_clock():
                 y = pixel[1]
                 clock.set_pixel(x,y, 200,0,0)
 
-        #clock.show()
         time.sleep(.5)
+        old_date = current_date
 
 #TODO: Handle buttons
 #TODO: Send messages
