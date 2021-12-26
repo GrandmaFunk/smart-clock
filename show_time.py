@@ -114,14 +114,21 @@ def update_memo(today):
     df.set_index(df.date, inplace=True)
     df['memo'] = df.memo.ffill()
 
-    # Get today's memo
-    #TODO: Error handle this
-    memo = df.loc[today.strftime('%Y-%m-%d')].memo
-
     try:
         last_memo = pickle.load(open('logs/last_memo.p', 'rb'))
     except FileNotFoundError:
         last_memo = None
+
+    # Get today's memo
+    try:
+        memo = df.loc[today.strftime('%Y-%m-%d')].memo
+    except (KeyError, AttributeError) as e:
+        print(e)
+        print('Falling back to old memo')
+        if last_memo:
+            memo = last_memo
+        else:
+            memo = "You're the absolute best!"
     
     if last_memo != memo:
         db.collection(u'memos').document(u'memo').set({'memo': memo})
