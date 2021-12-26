@@ -100,7 +100,10 @@ button_map = { 5: 'A',
 
 def button_pressed(button):
     button_name = button_map[button.pin.number]
-    print(f'Button {button_name} pressed!')
+    if button_name == 'B':
+        db.collection(u'memos').document(u'blink').set({'status': False})
+    
+
 
 
 def update_memo(today):
