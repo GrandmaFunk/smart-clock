@@ -110,7 +110,7 @@ def update_memo(today):
     if last_memo != memo:
         #TODO: Write the memo to Firebase
         print(memo)
-        pass
+        db.collection(u'memos').document(u'memo').set({'memo': memo})
 
 def on_blink(doc, changes, read_time):
     global blink
@@ -209,7 +209,6 @@ clock.set_brightness(0.1)
 blink = False
 
 #TODO: Handle buttons
-#TODO: Send messages
 
 clock_thread = threading.Thread(target = refresh_clock)
 
