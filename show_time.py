@@ -12,6 +12,7 @@ import pandas as pd
 import pytz
 import pickle
 import json
+import sys
 
 from gpiozero import Button
 from signal import pause
@@ -105,6 +106,9 @@ def button_pressed(button):
     button_name = button_map[button.pin.number]
     if button_name == 'B':
         db.collection(u'memos').document(u'blink').set({'status': False})
+
+def update_memo_manually(message):
+    db.collection(u'memos').document(u'memo').set({'memo': message})
 
 def update_memo(today):
 
@@ -218,46 +222,51 @@ def refresh_clock():
         old_time = current_time
 
 if __name__ == '__main__':
-        
+    
     # Connect to Firestore
     cred = credentials.Certificate('.secrets/key.json')
     firebase_admin.initialize_app(cred)
     cloud_project = json.load(open('.secrets/vars.json'))['project']
     db = firestore.Client(project = cloud_project)
 
-    # Create display
-    clock = UnicornHATMini()
-    clock.set_rotation(180)
-    clock.set_brightness(0.1)
+    # Allow script to be called from the command line
+    if (len(sys.argv) > 1) and (type(sys.argv[1]) == str):
+        update_memo_manually(sys.argv[1])
+        print('Manually updated the memo.')
+    else:
+        # Create display
+        clock = UnicornHATMini()
+        clock.set_rotation(180)
+        clock.set_brightness(0.1)
 
-    # Start thread to listen to Firestore changes
-    callback_done = threading.Event()
-    blink_ref = db.collection(u'memos').document(u'blink')
-    blink_watch = blink_ref.on_snapshot(on_blink)
+        # Start thread to listen to Firestore changes
+        callback_done = threading.Event()
+        blink_ref = db.collection(u'memos').document(u'blink')
+        blink_watch = blink_ref.on_snapshot(on_blink)
 
-    # Start thread to show time
-    clock_thread = threading.Thread(target = refresh_clock)
-    clock_thread.start()
+        # Start thread to show time
+        clock_thread = threading.Thread(target = refresh_clock)
+        clock_thread.start()
 
-    # Blink the middle section of the clock
-    blink_thread = threading.Thread(target = show_blink)
-    blink_thread.start()
+        # Blink the middle section of the clock
+        blink_thread = threading.Thread(target = show_blink)
+        blink_thread.start()
 
-    # Set buttons
-    button_a = Button(5)
-    button_b = Button(6)
-    button_x = Button(16)
-    button_y = Button(24)
+        # Set buttons
+        button_a = Button(5)
+        button_b = Button(6)
+        button_x = Button(16)
+        button_y = Button(24)
 
-    try:
-        button_a.when_pressed = button_pressed
-        button_b.when_pressed = button_pressed
-        button_x.when_pressed = button_pressed
-        button_y.when_pressed = button_pressed
-        pause()
-    except KeyboardInterrupt:
-        button_a.close()
-        button_b.close()
-        button_x.close()
-        button_y.close()
+        try:
+            button_a.when_pressed = button_pressed
+            button_b.when_pressed = button_pressed
+            button_x.when_pressed = button_pressed
+            button_y.when_pressed = button_pressed
+            pause()
+        except KeyboardInterrupt:
+            button_a.close()
+            button_b.close()
+            button_x.close()
+            button_y.close()
 
