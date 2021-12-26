@@ -132,9 +132,12 @@ def on_blink(doc, changes, read_time):
     callback_done.set()
         
 def show_blink():
+
     global blink
+
     while True:
         if blink:
+            # Show a green pixel going up and down the middle of the display
             for i in range(7):
                 clock.set_pixel(8, i, 0, 200, 0)
                 clock.show()
@@ -148,6 +151,7 @@ def show_blink():
                 clock.set_pixel(8, i, 0, 0, 0)
                 time.sleep(.1)
         else:
+            # Show the standard two dots to separate hours and minutes
             clock.set_pixel(8, 2, 70, 0, 0)
             clock.set_pixel(8, 4, 70, 0, 0)
             clock.show()
@@ -168,10 +172,10 @@ def set_time(time_to_set, brightness):
         elif pos == 3:
             offset = 14
         for pixel in numbers[val]:
-            x = pixel[0] + offset
-            y = pixel[1]
-            clock.set_pixel(x,y, brightness,0,0)
-
+            if not (pos == 0 and val == '0'):
+                x = pixel[0] + offset
+                y = pixel[1]
+                clock.set_pixel(x,y, brightness,0,0)
 
 def refresh_clock():
     middle_on = True
@@ -196,7 +200,9 @@ def refresh_clock():
         if current_time != old_time:
             set_time(old_time, 0)
             set_time(current_time, 200)
-        time.sleep(.5)
+
+        # Set old values to compare
+        time.sleep(5)
         old_date = current_date
         old_time = current_time
 
