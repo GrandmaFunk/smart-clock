@@ -90,18 +90,6 @@ numbers = {
     [1, 4]]
 }
 
-# Connect to Firestore
-cred = credentials.Certificate('.secrets/key.json')
-firebase_admin.initialize_app(cred)
-db = firestore.Client()
-
-clock = UnicornHATMini()
-# Rotate text upside down
-clock.set_rotation(180)
-# Set brightness
-clock.set_brightness(0.1)
-
-
 def update_memo(today):
 
     # Read the CSV file
@@ -205,6 +193,18 @@ def refresh_clock():
         time.sleep(5)
         old_date = current_date
         old_time = current_time
+
+
+# Connect to Firestore
+cred = credentials.Certificate('.secrets/key.json')
+firebase_admin.initialize_app(cred)
+db = firestore.Client()
+
+clock = UnicornHATMini()
+# Rotate text upside down
+clock.set_rotation(180)
+# Set brightness
+clock.set_brightness(0.1)
 
 #TODO: Handle buttons
 #TODO: Send messages
