@@ -12,6 +12,9 @@ import pandas as pd
 import pytz
 import pickle
 
+from gpiozero import Button
+from signal import pause
+
 
 numbers = {
     '0': [[0, 0], [1, 0], [2, 0],
@@ -89,6 +92,16 @@ numbers = {
     ':': [[1, 2],
     [1, 4]]
 }
+
+button_map = { 5: 'A',
+               6: 'B',
+               16: 'X',
+               24: 'Y'}
+
+def button_pressed(button):
+    button_name = button_map[button.pin.number]
+    print(f'Button {button_name} pressed!')
+
 
 def update_memo(today):
 
@@ -208,18 +221,36 @@ clock.set_brightness(0.1)
 # Set vars
 blink = False
 
-#TODO: Handle buttons
-
-clock_thread = threading.Thread(target = refresh_clock)
-
 # Start thread to listen to Firestore changes
 callback_done = threading.Event()
 blink_ref = db.collection(u'memos').document(u'blink')
 blink_watch = blink_ref.on_snapshot(on_blink)
 
 # Start thread to show time
+clock_thread = threading.Thread(target = refresh_clock)
 clock_thread.start()
 
 # Blink the middle section of the clock
-show_blink()
+blink_thread = threading.Thread(target = show_blink)
+blink_thread.start()
+
+# Set buttons
+button_a = Button(5)
+button_b = Button(6)
+button_x = Button(16)
+button_y = Button(24)
+
+try:
+    button_a.when_pressed = button_pressed
+    button_b.when_pressed = button_pressed
+    button_x.when_pressed = button_pressed
+    button_y.when_pressed = button_pressed
+    pause()
+except KeyboardInterrupt:
+    button_a.close()
+    button_b.close()
+    button_x.close()
+    button_y.close()
+
+
 
