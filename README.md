@@ -3,6 +3,8 @@ A smart clock which displays the current time and communicates with the [Smart F
 
 Made for the [Pimoroni Unicorn Hat Mini](https://shop.pimoroni.com/products/unicorn-hat-mini).
 
+![smart clock](smart-clock.jpg)
+
 ## Additional Setup
 Setup will vary by device, but below are additional setup commands for Raspberry Pi compatibility that may be useful in case of errors:
 ```
